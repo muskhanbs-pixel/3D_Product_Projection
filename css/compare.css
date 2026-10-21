@@ -1,0 +1,474 @@
+/* ==========================================================
+   COMPARE + APPLICATIONS + FOOTER
+   ========================================================== */
+
+/* ---------- Accent colors per projection ---------- */
+.spec__col--persp,
+.spec__cell--persp,
+.bento-card--persp {
+  --accent: var(--persp);
+  --accent-glow: var(--persp-glow);
+}
+
+.spec__col--ortho,
+.spec__cell--ortho,
+.bento-card--ortho {
+  --accent: var(--ortho);
+  --accent-glow: var(--ortho-glow);
+}
+
+/* ==========================================================
+   SPEC SHEET
+   ========================================================== */
+.spec {
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.spec__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.spec__table th,
+.spec__table td {
+  padding: var(--space-5) var(--space-6);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.spec__table tbody tr:last-child > * {
+  border-bottom: none;
+}
+
+/* Header row */
+.spec__corner {
+  width: 22%;
+  vertical-align: middle !important;
+}
+
+.spec__col {
+  position: relative;
+  width: 39%;
+}
+
+/* Thin accent line on top of each projection column */
+.spec__col::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* Row label */
+.spec__prop {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  transition: color var(--dur-micro) var(--ease-out);
+}
+
+.spec__prop-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.spec__prop svg {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+/* Cells */
+.spec__cell strong {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.spec__cell > span {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.spec__code {
+  display: inline-block;
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  word-break: break-word;
+}
+
+/* Row hover */
+.spec__table tbody tr {
+  transition: background var(--dur-micro) var(--ease-out);
+}
+
+.spec__table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.spec__table tbody tr:hover .spec__prop {
+  color: var(--text);
+}
+
+/* Rating pips */
+.pips {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: var(--space-3);
+}
+
+.pips i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+}
+
+.pips i.is-on {
+  background: var(--accent);
+  border-color: transparent;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ==========================================================
+   APPLICATIONS (BENTO)
+   ========================================================== */
+.apps-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.apps-toolbar .segmented {
+  min-width: 340px;
+}
+
+.apps-legend {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.apps-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense; /* pack big and small cards with no gaps */
+  gap: var(--space-4);
+}
+
+.bento-card {
+  position: relative;
+  isolation: isolate; /* keeps the art + spotlight layers inside the card */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color var(--dur-ui) var(--ease-out),
+    transform var(--dur-ui) var(--ease-out),
+    opacity var(--dur-ui) var(--ease-out),
+    filter var(--dur-ui) var(--ease-out);
+}
+
+.bento-card--lg {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.bento-card--wide {
+  grid-column: span 2;
+}
+
+/* Spotlight that follows the cursor (JS sets --mx / --my) */
+.bento-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+.bento-card:hover::before {
+  opacity: 1;
+}
+
+.bento-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: translateY(-3px);
+}
+
+/* Filtered out: fade, don't remove (no layout jump) */
+.bento-card.is-dimmed {
+  opacity: 0.2;
+  filter: grayscale(1);
+  transform: scale(0.98);
+}
+
+.bento-card__icon {
+  position: absolute;
+  top: var(--space-5);
+  left: var(--space-5);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.bento-card__tag {
+  position: absolute;
+  top: var(--space-5);
+  right: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bento-card__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.bento-card--lg .bento-card__title {
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.bento-card__text {
+  max-width: 44ch;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+/* ---------- Card art (big cards) ---------- */
+.bento-card__art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  /* fade the art out toward the bottom so the text stays readable */
+  -webkit-mask-image: linear-gradient(to bottom, #000 35%, transparent 85%);
+  mask-image: linear-gradient(to bottom, #000 35%, transparent 85%);
+}
+
+.art-lines {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.55;
+  transition: opacity var(--dur-ui) var(--ease-out);
+}
+
+.bento-card:hover .art-lines {
+  opacity: 0.9;
+}
+
+.art-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.art-dash {
+  stroke-dasharray: 4 4;
+}
+
+.art-point {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 8px var(--accent));
+}
+
+.art-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--accent);
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+.footer {
+  margin-top: var(--space-9);
+  padding-block: var(--space-8);
+  border-top: 1px solid var(--border);
+}
+
+.footer__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.footer__tagline {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+.footer__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.footer__name {
+  color: var(--text);
+}
+
+.footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+}
+
+.footer__links a {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  transition: color var(--dur-micro) var(--ease-out);
+}
+
+.footer__links a:hover {
+  color: var(--text);
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 1000px) {
+  .bento {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  /* Spec sheet: each row becomes a stacked card */
+  .spec__table thead {
+    display: none;
+  }
+
+  .spec__table,
+  .spec__table tbody {
+    display: block;
+  }
+
+  .spec__table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .spec__table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .spec__table th,
+  .spec__table td {
+    border-bottom: none;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .spec__table th[scope="row"] {
+    grid-column: 1 / -1; /* row label spans both columns */
+    padding-top: var(--space-5);
+    padding-bottom: 0;
+  }
+
+  .spec__table td {
+    padding-bottom: var(--space-5);
+  }
+
+  /* Since the header is hidden, label each cell */
+  .spec__cell::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .apps-toolbar .segmented {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .footer__side {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .bento {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .bento-card {
+    min-height: 180px;
+  }
+
+  .bento-card--lg,
+  .bento-card--wide {
+    grid-column: auto;
+    grid-row: auto;
+    min-height: 300px;
+  }
+}

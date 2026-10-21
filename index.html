@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRUSTUM — A Projection Lab</title>
+  <meta name="description" content="An interactive 3D lab comparing perspective and orthographic projection on the same object, built with Three.js." />
+  <meta name="theme-color" content="#08090b" />
+
+  <!-- Share preview (when the link is pasted in chats / social media) -->
+  <meta property="og:title" content="FRUSTUM — A Projection Lab" />
+  <meta property="og:description" content="See the same 3D object through two cameras: perspective and orthographic." />
+  <meta property="og:type" content="website" />
+
+  <!-- Favicon: our orange → cyan frustum, as an inline SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' x2='1'><stop offset='0' stop-color='%23FF8A3D'/><stop offset='1' stop-color='%234FE3D0'/></linearGradient></defs><path d='M9 7h14l7 18H2z' fill='url(%23g)'/></svg>" />
+
+  <!-- Progressive enhancement: mark that JS is running, + a loader safety net -->
+  <script>
+    document.documentElement.classList.add("js");
+    setTimeout(function () {
+      document.documentElement.classList.add("is-loaded");
+    }, 5000);
+  </script>
+
+  <!-- Fonts: Inter Tight (headings), Inter (body), JetBrains Mono (data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Our styles. ORDER MATTERS -->
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/sections.css" />
+  <link rel="stylesheet" href="css/three.css" />
+  <link rel="stylesheet" href="css/controls.css" />
+  <link rel="stylesheet" href="css/explainer.css" />
+  <link rel="stylesheet" href="css/experiment.css" />
+  <link rel="stylesheet" href="css/compare.css" />
+  <link rel="stylesheet" href="css/polish.css" />
+
+  <!-- Import map: tells the browser where to find "three" when we import it -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <!-- Keyboard users can jump straight to the lab -->
+  <a class="skip-link" href="#lab">Skip to the lab</a>
+
+  <!-- ============ LOADER ============ -->
+  <div class="loader" aria-hidden="true">
+    <svg class="loader__cube" viewBox="0 0 64 64" fill="none" stroke-width="1.5" stroke-linejoin="round">
+      <defs>
+        <linearGradient id="loader-gradient" x1="0" x2="1">
+          <stop offset="0" stop-color="#FF8A3D" />
+          <stop offset="1" stop-color="#4FE3D0" />
+        </linearGradient>
+      </defs>
+      <path pathLength="1" stroke="url(#loader-gradient)" d="M32 6 54 18.5v27L32 58 10 45.5v-27z" />
+      <path pathLength="1" stroke="url(#loader-gradient)" d="M10 18.5 32 31l22-12.5M32 31v27" />
+    </svg>
+    <span class="loader__brand">FRUSTUM</span>
+    <span class="loader__bar"><span></span></span>
+  </div>
+
+  <!-- ============ NAVIGATION ============ -->
+  <header class="nav">
+    <a href="#top" class="nav__logo" aria-label="FRUSTUM home">
+      <span class="logo-mark" aria-hidden="true"></span>
+      FRUSTUM
+    </a>
+
+    <nav class="nav__links" aria-label="Main">
+      <a href="#lab">Lab</a>
+      <a href="#explainer">Explainer</a>
+      <a href="#experiment">Experiment</a>
+      <a href="#compare">Compare</a>
+      <a href="#applications">Uses</a>
+    </nav>
+
+    <a href="#lab" class="btn btn--ghost btn--sm">Open Lab</a>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="top">
+      <div class="container hero__inner">
+
+        <div class="hero__content">
+          <p class="eyebrow" data-intro style="--d: 0ms">
+            <span class="dot dot--persp"></span> Perspective
+            <span class="eyebrow__sep">/</span>
+            <span class="dot dot--ortho"></span> Orthographic
+          </p>
+
+          <!-- Each line is masked, so it can slide up into view -->
+          <h1 class="display">
+            <span class="line"><span>See 3D</span></span>
+            <span class="line"><span>differently.</span></span>
+          </h1>
+
+          <p class="lead" data-intro style="--d: 250ms">
+            Explore how perspective changes the way we perceive the same object.
+          </p>
+
+          <div class="hero__actions" data-intro style="--d: 380ms">
+            <a href="#lab" class="btn btn--primary" data-magnetic>
+              Enter Projection Lab <span class="btn__arrow" aria-hidden="true">→</span>
+            </a>
+
+            <span class="status mono-label" id="three-status">
+              <span class="status__dot"></span>
+              <span class="status__text">Three.js · connecting…</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="hero__stage" id="hero-stage" aria-hidden="true" data-intro style="--d: 150ms">
+          <span class="stage-label mono-label" data-hero-label>
+            <span class="stage-label__dot"></span>
+            <span data-hero-label-text>PERSPECTIVECAMERA · FOV 40.0°</span>
+          </span>
+
+          <div class="morph-meter">
+            <span class="mono-label">PERSP</span>
+            <span class="morph-meter__track">
+              <span class="morph-meter__thumb" data-hero-thumb></span>
+            </span>
+            <span class="mono-label">ORTHO</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ PROJECTION LAB ============ -->
+    <section class="section" id="lab">
+      <div class="container">
+
+        <header class="section-head">
+          <p class="eyebrow">01 — Projection Lab</p>
+          <h2 class="section-title">One object.<br />Two ways of seeing.</h2>
+          <p class="lead">
+            Pick an object, then drag either view and both follow.
+            Click a view to enable scroll-zoom, and watch what changes.
+          </p>
+        </header>
+
+        <!-- Object picker -->
+        <div class="object-picker" role="group" aria-label="Choose an object">
+
+          <button class="object-tile is-active" data-object="cube" aria-pressed="true">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+              <path d="M16 4 27 10v12L16 28 5 22V10z" />
+              <path d="M5 10l11 6 11-6M16 16v12" />
+            </svg>
+            <span class="object-tile__label">Cube</span>
+            <kbd class="object-tile__key">1</kbd>
+          </button>
+
+          <button class="object-tile" data-object="sphere" aria-pressed="false">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <circle cx="16" cy="16" r="11" />
+              <ellipse cx="16" cy="16" rx="11" ry="4" />
+            </svg>
+            <span class="object-tile__label">Sphere</span>
+            <kbd class="object-tile__key">2</kbd>
+          </button>
+
+          <button class="object-tile" data-object="cylinder" aria-pressed="false">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <ellipse cx="16" cy="8" rx="9" ry="3.5" />
+              <path d="M7 8v16c0 1.9 4 3.5 9 3.5s9-1.6 9-3.5V8" />
+            </svg>
+            <span class="object-tile__label">Cylinder</span>
+            <kbd class="object-tile__key">3</kbd>
+          </button>
+
+          <button class="object-tile" data-object="cone" aria-pressed="false">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linejoin="round" aria-hidden="true">
+              <path d="M16 4 7 24M16 4l9 20" />
+              <ellipse cx="16" cy="24" rx="9" ry="3.5" />
+            </svg>
+            <span class="object-tile__label">Cone</span>
+            <kbd class="object-tile__key">4</kbd>
+          </button>
+
+          <button class="object-tile" data-object="torus" aria-pressed="false">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <ellipse cx="16" cy="16" rx="12" ry="7" />
+              <path d="M10 15.5c2.5-2.5 9.5-2.5 12 0" />
+              <path d="M11.5 14.5c1.8 2 7.2 2 9 0" />
+            </svg>
+            <span class="object-tile__label">Torus</span>
+            <kbd class="object-tile__key">5</kbd>
+          </button>
+
+          <button class="object-tile" data-object="speaker" aria-pressed="false">
+            <svg class="object-tile__icon" viewBox="0 0 32 32" fill="none" stroke="currentColor"
+                 stroke-width="1.5" aria-hidden="true">
+              <rect x="9" y="4" width="14" height="24" rx="3" />
+              <circle cx="16" cy="19" r="4.5" />
+              <circle cx="16" cy="10" r="2" />
+            </svg>
+            <span class="object-tile__label">Speaker</span>
+            <kbd class="object-tile__key">6</kbd>
+          </button>
+
+        </div>
+
+        <div class="lab-toolbar">
+          <button class="chip is-active" id="toggle-sync" aria-pressed="true">
+            <span class="chip__dot"></span> Sync cameras
+          </button>
+          <button class="chip is-active" id="toggle-match" aria-pressed="true">
+            <span class="chip__dot"></span> Match size
+          </button>
+          <span class="mono-label lab-toolbar__status" id="sync-status">LEADER · PERSPECTIVE</span>
+        </div>
+
+        <div class="lab-grid" id="lab-grid">
+
+          <!-- ===== LEFT: PERSPECTIVE ===== -->
+          <div class="viewport viewport--persp" id="viewport-persp">
+            <div class="viewport__hud viewport__hud--tl">
+              <span class="viewport__tag">
+                <span class="dot dot--persp"></span> Perspective
+              </span>
+            </div>
+
+            <div class="viewport__hud viewport__hud--tr">
+              <button class="viewport__btn" id="reset-persp" aria-label="Reset perspective view" title="Reset view">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 1 0 3-6.7" />
+                  <path d="M3 4v5h5" />
+                </svg>
+              </button>
+              <button class="viewport__btn" data-fullscreen="viewport-persp" aria-label="Toggle fullscreen" title="Fullscreen">
+                <svg class="icon-expand" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+                </svg>
+                <svg class="icon-collapse" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="viewport__hud viewport__hud--bl mono-label">
+              FOV <span class="viewport__value" data-fov>50°</span>
+              <span class="viewport__sep">·</span>
+              DIST <span class="viewport__value" data-dist>0.00</span>
+            </div>
+
+            <div class="viewport__hud viewport__hud--br mono-label">
+              PerspectiveCamera
+            </div>
+          </div>
+
+          <!-- ===== RIGHT: ORTHOGRAPHIC ===== -->
+          <div class="viewport viewport--ortho" id="viewport-ortho">
+            <div class="viewport__hud viewport__hud--tl">
+              <span class="viewport__tag">
+                <span class="dot dot--ortho"></span> Orthographic
+              </span>
+            </div>
+
+            <div class="viewport__hud viewport__hud--tr">
+              <button class="viewport__btn" id="reset-ortho" aria-label="Reset orthographic view" title="Reset view">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 12a9 9 0 1 0 3-6.7" />
+                  <path d="M3 4v5h5" />
+                </svg>
+              </button>
+              <button class="viewport__btn" data-fullscreen="viewport-ortho" aria-label="Toggle fullscreen" title="Fullscreen">
+                <svg class="icon-expand" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+                </svg>
+                <svg class="icon-collapse" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="viewport__hud viewport__hud--bl mono-label">
+              ZOOM <span class="viewport__value" data-zoom>1.00×</span>
+              <span class="viewport__sep">·</span>
+              DIST <span class="viewport__value" data-dist>0.00</span>
+            </div>
+
+            <div class="viewport__hud viewport__hud--br mono-label">
+              OrthographicCamera
+            </div>
+          </div>
+
+        </div>
+
+        <div class="lab-notes">
+          <p class="lab-note">
+            <span class="dot dot--persp"></span>
+            <span><strong>Perspective:</strong> grid lines converge toward the horizon, like railway tracks. Zooming moves the camera.</span>
+          </p>
+          <p class="lab-note">
+            <span class="dot dot--ortho"></span>
+            <span><strong>Orthographic:</strong> grid lines stay perfectly parallel. Zooming changes scale, not distance.</span>
+          </p>
+        </div>
+
+        <!-- ============ CAMERA CONTROL CENTER ============ -->
+        <div class="control-center">
+
+          <div class="control-center__head">
+            <h3 class="control-center__title">Camera Control Center</h3>
+            <span class="mono-label">Double-click a value to reset it</span>
+          </div>
+
+          <div class="control-center__body">
+
+            <div class="control-group">
+              <p class="control-group__title"><span class="dot dot--persp"></span> Perspective</p>
+
+              <div class="slider slider--persp">
+                <div class="slider__head">
+                  <label class="slider__label" for="fov-slider">Field of view</label>
+                  <output class="slider__value" id="fov-value" title="Double-click to reset">50°</output>
+                </div>
+                <input class="slider__input" type="range" id="fov-slider" min="15" max="90" step="1" value="50" />
+              </div>
+
+              <div class="slider slider--persp">
+                <div class="slider__head">
+                  <label class="slider__label" for="distance-slider">Camera distance</label>
+                  <output class="slider__value" id="distance-value" title="Double-click to reset">7.07</output>
+                </div>
+                <input class="slider__input" type="range" id="distance-slider" min="2.5" max="12" step="0.01" value="7.07" />
+              </div>
+            </div>
+
+            <div class="control-group">
+              <p class="control-group__title"><span class="dot dot--ortho"></span> Orthographic</p>
+
+              <div class="slider slider--ortho">
+                <div class="slider__head">
+                  <label class="slider__label" for="zoom-slider">Ortho zoom</label>
+                  <output class="slider__value" id="zoom-value" title="Double-click to reset">1.00×</output>
+                </div>
+                <input class="slider__input" type="range" id="zoom-slider" min="0.5" max="3" step="0.01" value="1" />
+              </div>
+
+              <div class="formula">
+                <span class="formula__math">h = 2 · d · tan(FOV / 2)</span>
+                <span class="formula__text">With Match size on, distance and zoom are linked by this formula.</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <p class="control-group__title">Scene</p>
+
+              <div class="control-row">
+                <button class="chip is-active" id="toggle-grid" aria-pressed="true">
+                  <span class="chip__dot"></span> Grid <kbd class="kbd">G</kbd>
+                </button>
+                <button class="chip" id="toggle-wireframe" aria-pressed="false">
+                  <span class="chip__dot"></span> Wireframe <kbd class="kbd">W</kbd>
+                </button>
+                <button class="chip is-active" id="toggle-autorotate" aria-pressed="true">
+                  <span class="chip__dot"></span> Auto-rotate <kbd class="kbd">A</kbd>
+                </button>
+              </div>
+
+              <div class="control-field">
+                <span class="control-field__label">Lighting <kbd class="kbd">L</kbd></span>
+                <div class="segmented" id="lighting-toggle" role="radiogroup" aria-label="Lighting preset">
+                  <span class="segmented__pill" aria-hidden="true"></span>
+                  <button class="segmented__option is-active" role="radio" aria-checked="true" data-lighting="studio">Studio</button>
+                  <button class="segmented__option" role="radio" aria-checked="false" data-lighting="dramatic">Dramatic</button>
+                  <button class="segmented__option" role="radio" aria-checked="false" data-lighting="technical">Technical</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <p class="control-group__title">Actions</p>
+
+              <div class="control-row">
+                <button class="btn btn--ghost btn--sm" id="reset-all">
+                  Reset view <kbd class="kbd">R</kbd>
+                </button>
+                <button class="btn btn--ghost btn--sm" data-fullscreen="lab-grid">
+                  Fullscreen lab <kbd class="kbd">F</kbd>
+                </button>
+              </div>
+
+              <p class="control-group__hint">
+                In fullscreen, keep using the keys: <strong>1–6</strong> objects, <strong>G W A L R</strong>. Press <strong>Esc</strong> to exit.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ PROJECTION EXPLAINER ============ -->
+    <section class="section" id="explainer">
+      <div class="container">
+
+        <header class="section-head">
+          <p class="eyebrow">02 — Explainer</p>
+          <h2 class="section-title">Two cameras.<br />Two rules.</h2>
+          <p class="lead">
+            Both diagrams show two identical objects from the side. One stays near,
+            the other keeps moving away. Watch what lands on the screen.
+          </p>
+        </header>
+
+        <div class="explainer-grid">
+
+          <article class="diagram-card diagram-card--persp">
+            <div class="diagram-card__head">
+              <span class="viewport__tag"><span class="dot dot--persp"></span> Perspective</span>
+              <h3 class="diagram-card__title">Farther means smaller.</h3>
+              <p class="diagram-card__text">
+                Every ray travels to a single point: the eye. The farther an object is,
+                the steeper its rays, and the smaller it lands on the screen.
+              </p>
+            </div>
+
+            <div class="diagram" data-diagram="perspective"></div>
+
+            <div class="diagram-card__foot">
+              <div class="stat">
+                <span class="stat__value" data-ratio>100%</span>
+                <span class="stat__label">Far object's size on screen,<br />compared to the near one</span>
+              </div>
+              <div class="formula-chip">
+                <span class="mono-label">Projection</span>
+                <span class="formula-chip__math">y′ = f · y / z</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="diagram-card diagram-card--ortho">
+            <div class="diagram-card__head">
+              <span class="viewport__tag"><span class="dot dot--ortho"></span> Orthographic</span>
+              <h3 class="diagram-card__title">Distance doesn't matter.</h3>
+              <p class="diagram-card__text">
+                Rays travel in parallel, straight onto the screen. Moving an object
+                farther away changes nothing about its size.
+              </p>
+            </div>
+
+            <div class="diagram" data-diagram="orthographic"></div>
+
+            <div class="diagram-card__foot">
+              <div class="stat">
+                <span class="stat__value" data-ratio>100%</span>
+                <span class="stat__label">Far object's size on screen,<br />compared to the near one</span>
+              </div>
+              <div class="formula-chip">
+                <span class="mono-label">Projection</span>
+                <span class="formula-chip__math">y′ = y</span>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <p class="explainer-hint mono-label">Hover a diagram to move the far object yourself</p>
+
+      </div>
+    </section>
+
+    <!-- ============ CAMERA EXPERIMENT ============ -->
+    <section class="section" id="experiment">
+      <div class="container">
+
+        <header class="section-head">
+          <p class="eyebrow">03 — Experiment</p>
+          <h2 class="section-title">Move closer.<br />Watch what changes.</h2>
+          <p class="lead">
+            Both cameras move together, by the same distance. Orthographic zoom is locked.
+            The meters measure how much of the screen the object really fills.
+          </p>
+        </header>
+
+        <div class="experiment-toolbar">
+          <div class="segmented segmented--two" id="experiment-mode" role="radiogroup" aria-label="Experiment subject">
+            <span class="segmented__pill" aria-hidden="true"></span>
+            <button class="segmented__option is-active" role="radio" aria-checked="true" data-mode="single">Single object</button>
+            <button class="segmented__option" role="radio" aria-checked="false" data-mode="pillars">Pillar row</button>
+          </div>
+
+          <button class="chip" id="experiment-play" aria-pressed="false">
+            <span class="chip__dot"></span> Auto sweep
+          </button>
+        </div>
+
+        <div class="experiment-grid">
+
+          <div class="experiment-panel experiment-panel--persp" data-panel="persp">
+            <div class="viewport viewport--persp viewport--static" id="exp-persp">
+              <div class="viewport__hud viewport__hud--tl">
+                <span class="viewport__tag"><span class="dot dot--persp"></span> Perspective</span>
+              </div>
+              <div class="viewport__hud viewport__hud--bl mono-label">
+                FOV <span class="viewport__value">50°</span>
+                <span class="viewport__sep">·</span>
+                DIST <span class="viewport__value" data-exp-dist>7.00</span>
+              </div>
+            </div>
+
+            <div class="meter">
+              <div class="meter__head">
+                <span class="meter__label">Apparent size</span>
+                <span class="meter__value" data-size>0%</span>
+              </div>
+              <div class="meter__track">
+                <span class="meter__fill" data-fill></span>
+                <span class="meter__marker" data-marker title="Size at the start"></span>
+              </div>
+              <p class="meter__feedback">
+                <strong data-feedback>Move the camera to compare</strong>
+                <span class="meter__multiplier" data-multiplier>×1.00</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="experiment-panel experiment-panel--ortho" data-panel="ortho">
+            <div class="viewport viewport--ortho viewport--static" id="exp-ortho">
+              <div class="viewport__hud viewport__hud--tl">
+                <span class="viewport__tag"><span class="dot dot--ortho"></span> Orthographic</span>
+              </div>
+              <div class="viewport__hud viewport__hud--bl mono-label">
+                ZOOM <span class="viewport__value">1.00× LOCKED</span>
+                <span class="viewport__sep">·</span>
+                DIST <span class="viewport__value" data-exp-dist>7.00</span>
+              </div>
+            </div>
+
+            <div class="meter">
+              <div class="meter__head">
+                <span class="meter__label">Apparent size</span>
+                <span class="meter__value" data-size>0%</span>
+              </div>
+              <div class="meter__track">
+                <span class="meter__fill" data-fill></span>
+                <span class="meter__marker" data-marker title="Size at the start"></span>
+              </div>
+              <p class="meter__feedback">
+                <strong data-feedback>Apparent size remains constant</strong>
+                <span class="meter__multiplier" data-multiplier>×1.00</span>
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="distance-control">
+          <div class="distance-control__head">
+            <label class="distance-control__label" for="exp-distance">Camera distance</label>
+            <output class="distance-control__value">
+              <span id="exp-distance-value">7.00</span><span class="distance-control__unit">units</span>
+            </output>
+          </div>
+          <input class="slider__input slider__input--xl" type="range" id="exp-distance"
+                 min="2.5" max="16" step="0.01" value="7" />
+          <div class="distance-control__scale mono-label">
+            <span>← NEAR</span>
+            <span>FAR →</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ TECHNICAL COMPARISON ============ -->
+    <section class="section" id="compare">
+      <div class="container">
+
+        <header class="section-head">
+          <p class="eyebrow">04 — Compare</p>
+          <h2 class="section-title">Side by side,<br />point by point.</h2>
+          <p class="lead">
+            Everything you just saw in the lab, summarized as a spec sheet.
+          </p>
+        </header>
+
+        <div class="spec">
+          <table class="spec__table">
+            <thead>
+              <tr>
+                <th scope="col" class="spec__corner"><span class="mono-label">Property</span></th>
+                <th scope="col" class="spec__col spec__col--persp">
+                  <span class="viewport__tag"><span class="dot dot--persp"></span> Perspective</span>
+                </th>
+                <th scope="col" class="spec__col spec__col--ortho">
+                  <span class="viewport__tag"><span class="dot dot--ortho"></span> Orthographic</span>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 3 2 8l10 5 10-5z" /><path d="M2 13l10 5 10-5" />
+                    </svg>
+                    Depth perception
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>Strong</strong>
+                  <span>Size and converging lines instantly show what's near or far.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Weak</strong>
+                  <span>Depth can only be read from overlap and position.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M4 9V4h5M20 15v5h-5M4 4l7 7M20 20l-7-7" />
+                    </svg>
+                    Object size
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>Changes with distance</strong>
+                  <span>Farther objects appear smaller: y′ = f · y / z.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Always true to scale</strong>
+                  <span>Size never depends on distance: y′ = y.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Realism
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>High
+                    <span class="pips" role="img" aria-label="5 out of 5">
+                      <i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i><i class="is-on"></i>
+                    </span>
+                  </strong>
+                  <span>Matches how human eyes and real cameras see.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Low
+                    <span class="pips" role="img" aria-label="2 out of 5">
+                      <i class="is-on"></i><i class="is-on"></i><i></i><i></i><i></i>
+                    </span>
+                  </strong>
+                  <span>Looks technical and diagram-like, by design.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                      <path d="M3 20 20 6M3 20h18" /><path d="M9 20a6 6 0 0 0-1.6-4.2" />
+                    </svg>
+                    Field of view
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>An angle (FOV°)</strong>
+                  <span>The view volume is a pyramid that widens with distance.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>A fixed width</strong>
+                  <span>The view volume is a box. Zoom scales it instead.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                      <path d="M4 18 18 4M8 22 22 8" />
+                    </svg>
+                    Parallel lines
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>Converge</strong>
+                  <span>They meet at vanishing points, like railway tracks.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Stay parallel</strong>
+                  <span>They never meet, no matter how far they go.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                      <rect x="2" y="8" width="20" height="8" rx="1.5" /><path d="M6 8v3M10 8v4M14 8v3M18 8v4" />
+                    </svg>
+                    Measurement
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>Unreliable</strong>
+                  <span>On-screen lengths depend on distance, so you can't measure from the image.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Accurate</strong>
+                  <span>Equal lengths look equal, so you can measure straight from the view.</span>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="2" y="7" width="15" height="11" rx="2" /><path d="M17 11l5-3v9l-5-3" />
+                    </svg>
+                    Camera class
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <code class="spec__code">THREE.PerspectiveCamera(fov, aspect, near, far)</code>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <code class="spec__code">THREE.OrthographicCamera(left, right, top, bottom, near, far)</code>
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row" class="spec__prop">
+                  <span class="spec__prop-inner">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                      <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+                      <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    </svg>
+                    Common uses
+                  </span>
+                </th>
+                <td class="spec__cell spec__cell--persp" data-label="Perspective">
+                  <strong>Experiences</strong>
+                  <span>Games, VR, AR, film, simulations, product visualization.</span>
+                </td>
+                <td class="spec__cell spec__cell--ortho" data-label="Orthographic">
+                  <strong>Precision work</strong>
+                  <span>CAD, engineering, architecture, technical drawings, manufacturing.</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ REAL-WORLD APPLICATIONS ============ -->
+    <section class="section" id="applications">
+      <div class="container">
+
+        <header class="section-head">
+          <p class="eyebrow">05 — In the real world</p>
+          <h2 class="section-title">Where each<br />projection lives.</h2>
+          <p class="lead">
+            Perspective makes things feel real. Orthographic makes things measurable.
+            Most of the 3D you see every day uses one or the other on purpose.
+          </p>
+        </header>
+
+        <div class="apps-toolbar">
+          <div class="segmented" id="apps-filter" role="radiogroup" aria-label="Filter applications">
+            <span class="segmented__pill" aria-hidden="true"></span>
+            <button class="segmented__option is-active" role="radio" aria-checked="true" data-filter="all">All</button>
+            <button class="segmented__option" role="radio" aria-checked="false" data-filter="persp">Perspective</button>
+            <button class="segmented__option" role="radio" aria-checked="false" data-filter="ortho">Orthographic</button>
+          </div>
+
+          <div class="apps-legend mono-label">
+            <span><span class="dot dot--persp"></span> Feels real</span>
+            <span><span class="dot dot--ortho"></span> Measurable</span>
+          </div>
+        </div>
+
+        <div class="bento">
+
+          <article class="bento-card bento-card--persp bento-card--lg" data-projection="persp">
+            <svg class="bento-card__art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <g class="art-lines">
+                <path d="M200 90 L-200 300 M200 90 L-80 300 M200 90 L40 300 M200 90 L160 300 M200 90 L240 300 M200 90 L360 300 M200 90 L480 300 M200 90 L600 300" />
+                <path d="M0 98 H400 M0 110 H400 M0 128 H400 M0 156 H400 M0 198 H400 M0 262 H400" />
+              </g>
+              <circle cx="200" cy="90" r="4" class="art-point" />
+            </svg>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span> Perspective</span>
+            <h3 class="bento-card__title">Games</h3>
+            <p class="bento-card__text">
+              First and third-person games use perspective so worlds feel deep and immersive.
+              Every road, corridor and horizon depends on things shrinking with distance.
+            </p>
+          </article>
+
+          <article class="bento-card bento-card--persp" data-projection="persp">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <rect x="3" y="8" width="18" height="9" rx="3" /><circle cx="8.5" cy="12.5" r="1.5" /><circle cx="15.5" cy="12.5" r="1.5" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span></span>
+            <h3 class="bento-card__title">Virtual reality</h3>
+            <p class="bento-card__text">Two perspective cameras, one per eye, create true 3D depth.</p>
+          </article>
+
+          <article class="bento-card bento-card--persp" data-projection="persp">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <rect x="6" y="3" width="12" height="18" rx="2" /><path d="M12 9l3 1.7v3.6L12 16l-3-1.7v-3.6z" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span></span>
+            <h3 class="bento-card__title">Augmented reality</h3>
+            <p class="bento-card__text">Virtual objects must match the phone camera's real perspective.</p>
+          </article>
+
+          <article class="bento-card bento-card--persp" data-projection="persp">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="9" width="18" height="11" rx="2" /><path d="M3 9l2-5h16l-2 5M9 4 7.5 9M14 4l-1.5 5M19 4l-1.5 5" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span></span>
+            <h3 class="bento-card__title">Film &amp; VFX</h3>
+            <p class="bento-card__text">CGI must match the real lens, or effects look "pasted on."</p>
+          </article>
+
+          <article class="bento-card bento-card--persp" data-projection="persp">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 13 22 4l-6 16-4-6z" /><path d="M12 14l10-10" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span></span>
+            <h3 class="bento-card__title">Simulations</h3>
+            <p class="bento-card__text">Flight and driving simulators need realistic depth to train real reflexes.</p>
+          </article>
+
+          <article class="bento-card bento-card--persp bento-card--wide" data-projection="persp">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" /><path d="M4 7.5l8 4.5 8-4.5M12 12v9" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--persp"></span> Perspective</span>
+            <h3 class="bento-card__title">Product visualization</h3>
+            <p class="bento-card__text">
+              Online 3D configurators and product shots use perspective so products look
+              exactly like they would in your hands. Like the speaker in our lab.
+            </p>
+          </article>
+
+          <article class="bento-card bento-card--ortho bento-card--lg" data-projection="ortho">
+            <svg class="bento-card__art" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <g class="art-grid">
+                <path d="M0 30H400M0 60H400M0 90H400M0 120H400M0 150H400M0 180H400M0 210H400M0 240H400M0 270H400" />
+                <path d="M40 0V300M80 0V300M120 0V300M160 0V300M200 0V300M240 0V300M280 0V300M320 0V300M360 0V300" />
+              </g>
+              <g class="art-lines">
+                <rect x="90" y="30" width="120" height="45" rx="4" />
+                <rect x="90" y="100" width="120" height="80" rx="4" />
+                <circle cx="150" cy="140" r="18" />
+                <rect x="240" y="100" width="55" height="80" rx="4" />
+                <path class="art-dash" d="M90 75V100M210 75V100M210 100H240M210 180H240" />
+                <path d="M90 200H210M90 194V206M210 194V206" />
+              </g>
+              <text x="150" y="220" text-anchor="middle" class="art-text">120</text>
+            </svg>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span> Orthographic</span>
+            <h3 class="bento-card__title">CAD</h3>
+            <p class="bento-card__text">
+              Engineers design parts in front, top and side views, all orthographic,
+              so every line can be measured exactly.
+            </p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Engineering</h3>
+            <p class="bento-card__text">Machine parts must fit to the millimeter. No distortion allowed.</p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6M3 21h18" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Architecture</h3>
+            <p class="bento-card__text">Floor plans and elevations show true proportions of every wall.</p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="5" r="1.6" /><path d="M12 6.6 6 21M12 6.6 18 21M8.5 15h7" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Technical drawings</h3>
+            <p class="bento-card__text">Blueprints and manuals rely on views you can scale and trust.</p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+                <rect x="2" y="8" width="20" height="8" rx="1.5" /><path d="M6 8v3M10 8v4M14 8v3M18 8v4" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Measurement</h3>
+            <p class="bento-card__text">Maps and inspection tools measure lengths straight off the image.</p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 21V11l5 3v-3l5 3v-3l5 3V5h3v16z" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Manufacturing</h3>
+            <p class="bento-card__text">CNC machines and 3D printers follow exact, undistorted dimensions.</p>
+          </article>
+
+          <article class="bento-card bento-card--ortho" data-projection="ortho">
+            <span class="bento-card__icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 4l7 4-7 4-7-4z" /><path d="M5 12l7 4 7-4M5 16l7 4 7-4" />
+              </svg>
+            </span>
+            <span class="bento-card__tag mono-label"><span class="dot dot--ortho"></span></span>
+            <h3 class="bento-card__title">Isometric games</h3>
+            <p class="bento-card__text">Strategy and puzzle games use ortho for that tidy "diorama" look. 🎮</p>
+          </article>
+
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container footer__inner">
+
+      <div class="footer__brand">
+        <a href="#top" class="nav__logo" aria-label="Back to top">
+          <span class="logo-mark" aria-hidden="true"></span>
+          FRUSTUM
+        </a>
+        <p class="footer__tagline">An interactive lab for perspective and orthographic projection.</p>
+        <p class="mono-label">3D Product Projection Comparison System · Computer Graphics Mini Project</p>
+      </div>
+
+      <div class="footer__side">
+        <p class="mono-label">
+          Built by <span class="footer__name">MUSKHAN B S</span> · HTML, CSS, JavaScript &amp; Three.js
+        </p>
+        <nav class="footer__links" aria-label="Footer">
+          <a href="#lab">Lab</a>
+          <a href="#experiment">Experiment</a>
+          <a href="https://github.com/muskhanbs-pixel/3D_Product_Projection" target="_blank" rel="noopener">GitHub ↗</a>
+          <a href="#top">Back to top ↑</a>
+        </nav>
+      </div>
+
+    </div>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+/* ==========================================================
+   EXPERIMENT: distance experiment, meters, big slider
+   ========================================================== */
+
+.experiment-panel--persp {
+  --accent: var(--persp);
+  --accent-glow: var(--persp-glow);
+}
+
+.experiment-panel--ortho {
+  --accent: var(--ortho);
+  --accent-glow: var(--ortho-glow);
+}
+
+/* ---------- Toolbar ---------- */
+.experiment-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+/* A 2-option version of the segmented control from controls.css */
+.segmented--two {
+  grid-template-columns: repeat(2, 1fr);
+  min-width: 280px;
+}
+
+.segmented--two .segmented__pill {
+  width: calc((100% - 6px) / 2);
+}
+
+/* ---------- Panels ---------- */
+.experiment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.experiment-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Viewports here are driven by the slider, not the mouse */
+.viewport--static {
+  height: min(56vh, 560px);
+  min-height: 340px;
+  cursor: default;
+}
+
+/* ---------- Apparent size meter ---------- */
+.meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.meter__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.meter__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.meter__value {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.meter__track {
+  position: relative;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.meter__fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0%; /* JavaScript sets this every frame */
+  border-radius: 8px;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* Where the object started, for comparison */
+.meter__marker {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: 0%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.7;
+  transform: translateX(-50%);
+}
+
+.meter__feedback {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.meter__feedback strong {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.meter__multiplier {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-ui) var(--ease-out);
+}
+
+/* Lights up when the size has actually changed */
+.experiment-panel.is-changing .meter__multiplier {
+  color: var(--accent);
+}
+
+/* ---------- Big distance slider ---------- */
+.distance-control {
+  --accent: var(--text);
+  --accent-glow: rgba(255, 255, 255, 0.3);
+  margin-top: var(--space-6);
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.distance-control__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-4);
+}
+
+.distance-control__label {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+
+.distance-control__value {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.distance-control__unit {
+  margin-left: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+/* Bigger version of our slider, with an orange → cyan track */
+.slider__input--xl {
+  height: 28px;
+}
+
+.slider__input--xl::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, transparent var(--fill), var(--surface-2) var(--fill)),
+    linear-gradient(90deg, var(--persp), var(--ortho));
+}
+
+.slider__input--xl::-moz-range-track {
+  height: 6px;
+  border-radius: 6px;
+}
+
+.slider__input--xl::-moz-range-progress {
+  height: 6px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--persp), var(--ortho));
+}
+
+.slider__input--xl::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  margin-top: -9px;
+}
+
+.slider__input--xl::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+}
+
+.distance-control__scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .experiment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .segmented--two {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .distance-control {
+    padding: var(--space-5);
+  }
+
+  .distance-control__value {
+    font-size: 2rem;
+  }
+}

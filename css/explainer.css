@@ -1,0 +1,229 @@
+/* ==========================================================
+   EXPLAINER: projection diagram cards
+   ========================================================== */
+
+.diagram-card--persp {
+  --accent: var(--persp);
+  --accent-glow: var(--persp-glow);
+}
+
+.diagram-card--ortho {
+  --accent: var(--ortho);
+  --accent-glow: var(--ortho-glow);
+}
+
+.explainer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* ---------- Card ---------- */
+.diagram-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    border-color var(--dur-ui) var(--ease-out),
+    box-shadow var(--dur-ui) var(--ease-out);
+}
+
+.diagram-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 24px 80px -40px var(--accent-glow);
+}
+
+/* Entrance: hidden until the section scrolls into view */
+#explainer:not(.is-visible) .diagram-card {
+  opacity: 0;
+}
+
+#explainer.is-visible .diagram-card {
+  animation: card-rise var(--dur-big) var(--ease-out) both;
+}
+
+#explainer.is-visible .diagram-card--ortho {
+  animation-delay: 120ms; /* the second card follows a beat later */
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.diagram-card__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.diagram-card__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.diagram-card__text {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  max-width: 46ch;
+}
+
+/* ---------- Diagram box ---------- */
+.diagram {
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: ew-resize;   /* hints that you can move things left/right */
+  touch-action: pan-y; /* on phones: vertical swipes still scroll the page */
+}
+
+.diagram__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- SVG parts ---------- */
+.dg-volume {
+  fill: var(--accent);
+  opacity: 0.06;
+}
+
+.dg-axis {
+  stroke: var(--border-strong);
+  stroke-dasharray: 4 6;
+}
+
+.dg-screen {
+  stroke: var(--text-faint);
+  stroke-width: 2;
+}
+
+.dg-camera {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+.dg-camera-plane {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.dg-object {
+  fill: var(--surface-2);
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+}
+
+/* Rays "draw themselves" when the section appears */
+.dg-ray {
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  opacity: 0.55;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.4s var(--ease-out);
+}
+
+#explainer.is-visible .dg-ray {
+  stroke-dashoffset: 0;
+}
+
+/* What actually lands on the screen */
+.dg-bar {
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+}
+
+.dg-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  fill: var(--text-faint);
+}
+
+/* ---------- Card footer ---------- */
+.diagram-card__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stat__value {
+  min-width: 4ch;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+.formula-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.formula-chip__math {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.explainer-hint {
+  margin-top: var(--space-5);
+  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .explainer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .diagram-card {
+    padding: var(--space-5);
+  }
+
+  .stat__value {
+    font-size: 2rem;
+  }
+}

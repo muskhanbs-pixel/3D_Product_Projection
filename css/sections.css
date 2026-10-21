@@ -1,0 +1,197 @@
+/* ==========================================================
+   SECTIONS: shared layout for every page section
+   ========================================================== */
+
+.section {
+  padding-block: var(--space-10);
+  scroll-margin-top: var(--nav-h);
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+  margin-bottom: var(--space-7);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.section-head .lead {
+  max-width: 52ch;
+}
+
+/* ---------- Object picker ---------- */
+.object-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.object-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 96px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    background var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out),
+    transform var(--dur-ui) var(--ease-out);
+}
+
+.object-tile:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.object-tile:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.object-tile:focus-visible {
+  outline: 2px solid var(--ortho);
+  outline-offset: 2px;
+}
+
+.object-tile__icon {
+  width: 30px;
+  height: 30px;
+  transition: transform var(--dur-ui) var(--ease-out), filter var(--dur-ui) var(--ease-out);
+}
+
+.object-tile:hover .object-tile__icon {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+.object-tile__label {
+  font-size: 0.8rem;
+}
+
+.object-tile__key {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-faint);
+}
+
+/* The gradient underline, hidden until active */
+.object-tile::after {
+  content: "";
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--persp), var(--ortho));
+  transform: scaleX(0);
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+
+.object-tile.is-active {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.object-tile.is-active::after {
+  transform: scaleX(1);
+}
+
+.object-tile.is-active .object-tile__icon {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+}
+
+/* ---------- Lab toolbar ---------- */
+.lab-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.lab-toolbar__status {
+  margin-left: auto;
+}
+
+/* ---------- Lab grid + notes ---------- */
+.lab-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.lab-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.lab-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-inline: var(--space-2);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.lab-note strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.lab-note .dot {
+  margin-top: 0.55em;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .section {
+    padding-block: var(--space-9);
+  }
+
+  .object-picker {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .object-tile {
+    height: 84px;
+  }
+
+  .object-tile__key {
+    display: none; /* no keyboards on phones */
+  }
+
+  .lab-grid,
+  .lab-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-toolbar__status {
+    margin-left: 0;
+    width: 100%;
+  }
+}

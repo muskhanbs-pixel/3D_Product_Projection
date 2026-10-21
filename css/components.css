@@ -1,0 +1,203 @@
+/* ==========================================================
+   COMPONENTS: reusable building blocks
+   ========================================================== */
+
+/* ---------- Logo mark: a tiny frustum (trapezoid) ---------- */
+.logo-mark {
+  width: 18px;
+  height: 14px;
+  background: linear-gradient(90deg, var(--persp), var(--ortho));
+  clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding-inline: var(--space-6);
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-micro) var(--ease-out),
+    background var(--dur-micro) var(--ease-out),
+    box-shadow var(--dur-ui) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ortho);
+  outline-offset: 3px;
+}
+
+.btn--primary {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 32px rgba(255, 255, 255, 0.14);
+}
+
+.btn--primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn__arrow {
+  transition: transform var(--dur-ui) var(--ease-out);
+}
+
+.btn:hover .btn__arrow {
+  transform: translateX(4px);
+}
+
+.btn--ghost {
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.btn--sm {
+  height: 36px;
+  padding-inline: var(--space-4);
+  font-size: 0.85rem;
+}
+
+/* ---------- Eyebrow (small pill label above headings) ---------- */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+}
+
+.eyebrow__sep {
+  color: var(--text-faint);
+  margin-inline: var(--space-1);
+}
+
+/* ---------- Colored dots (projection indicators) ---------- */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--persp {
+  background: var(--persp);
+  box-shadow: 0 0 10px var(--persp-glow);
+}
+
+.dot--ortho {
+  background: var(--ortho);
+  box-shadow: 0 0 10px var(--ortho-glow);
+}
+
+/* ---------- Mono label (technical/data text) ---------- */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+
+/* ---------- Status indicator ---------- */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.status__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  transition: background var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out);
+}
+
+.status.is-ready .status__dot {
+  background: var(--ortho);
+  box-shadow: 0 0 10px var(--ortho-glow);
+}
+
+.status.is-ready .status__text {
+  color: var(--text-dim);
+}
+
+/* ---------- Chip (toggle button) ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 34px;
+  padding-inline: 14px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  transition:
+    color var(--dur-micro) var(--ease-out),
+    background var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out),
+    opacity var(--dur-ui) var(--ease-out);
+}
+
+.chip:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--ortho);
+  outline-offset: 2px;
+}
+
+.chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  transition: background var(--dur-ui) var(--ease-out), box-shadow var(--dur-ui) var(--ease-out);
+}
+
+/* ON state: brighter chip, dot uses both projection colors */
+.chip.is-active {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.chip.is-active .chip__dot {
+  background: linear-gradient(90deg, var(--persp), var(--ortho));
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.35);
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

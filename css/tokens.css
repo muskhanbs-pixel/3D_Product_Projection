@@ -1,0 +1,65 @@
+/* ==========================================================
+   FRUSTUM DESIGN TOKENS
+   The single source of truth for colors, type, spacing, motion.
+   Change a value here → it changes everywhere.
+   ========================================================== */
+
+:root {
+  /* ---------- Colors: surfaces ---------- */
+  --bg: #08090b;
+  --surface: #101216;
+  --surface-2: #16191f;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* ---------- Colors: text ---------- */
+  --text: #edeef0;
+  --text-dim: #8a8f98;
+  --text-faint: #5b606a;
+
+  /* ---------- Colors: the two projections ---------- */
+  --persp: #ff8a3d;                       /* Perspective = warm ember */
+  --ortho: #4fe3d0;                       /* Orthographic = cool mint */
+  --persp-glow: rgba(255, 138, 61, 0.35);
+  --ortho-glow: rgba(79, 227, 208, 0.35);
+
+  /* ---------- Typography ---------- */
+  --font-display: "Inter Tight", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* clamp(MIN, PREFERRED, MAX) = text that scales with screen width */
+  --fs-hero: clamp(3.5rem, 9vw, 7.5rem);
+  --fs-h2: clamp(2rem, 4vw, 3rem);
+  --fs-lead: clamp(1.05rem, 1.6vw, 1.25rem);
+  --fs-body: 1rem;
+  --fs-label: 0.75rem;
+
+  /* ---------- Spacing scale ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ---------- Motion ---------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* fast start, soft landing */
+  --dur-micro: 180ms;
+  --dur-ui: 350ms;
+  --dur-big: 800ms;
+
+  /* ---------- Layout ---------- */
+  --container: 1280px;
+  --nav-h: 64px;
+}
