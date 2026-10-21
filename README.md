@@ -2,7 +2,7 @@
 
 **An interactive 3D visualization that compares Perspective and Orthographic projection on the same object, side by side.**
 
-College mini project: *3D Product Projection Comparison System*
+Computer Graphics mini project: *3D Product Projection Comparison System*
 Built with HTML, CSS, JavaScript and Three.js — no frameworks, no build tools.
 
 ---
